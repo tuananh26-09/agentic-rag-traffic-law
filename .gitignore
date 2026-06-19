@@ -1,0 +1,25 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pkl
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# 1. Bỏ qua ổ cứng ảo của Docker
+minio_data/
+qdrant_data/
+
+# 2. Xử lý thư mục data (Chỉ cho phép file .md lên GitHub)
+data/*
+!data/*.md

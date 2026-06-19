@@ -1,0 +1,18 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+PyYAML==6.0.1
+langchain
+langchain-openai
+langchain-qdrant
+langchain-community
+langchain-huggingface
+langchain-google-genai
+qdrant-client
+minio
+underthesea
+rank-bm25
+langgraph
+fastapi
+uvicorn
+python-dotenv
+streamlit
+sentence-transformers
