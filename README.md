@@ -118,7 +118,8 @@ LANGCHAIN_PROJECT=LuatGiaoThong
 ```
 
 ### 4. Chuẩn bị Dữ liệu Huấn luyện (Data Ingestion)
-Ta cần phải tải dữ liệu trên ```https://vbpl.vn/van-ban/trung-uong``` hoặc ```https://thuvienphapluat.vn/phap-luat/ho-tro-phap-luat/luat-giao-thong-2026-va-cac-nghi-dinh-thong-tu-huong-dan-moi-nhat-luat-giao-thong-2026-gom-cac-luat-325614-246822.html``` ở định dạng `.docx` rồi sau đó chạy file `convert_luat.py` để chuyển dữ liệu từ `.docx` sang `.md`
+* Ta cần phải tải dữ liệu trên ```https://vbpl.vn/van-ban/trung-uong``` hoặc ```https://thuvienphapluat.vn/phap-luat/ho-tro-phap-luat/luat-giao-thong-2026-va-cac-nghi-dinh-thong-tu-huong-dan-moi-nhat-luat-giao-thong-2026-gom-cac-luat-325614-246822.html``` ở định dạng `.docx`.
+* Rồi sau đó chạy file `convert_luat.py` để chuyển dữ liệu từ `.docx` sang `.md`
 
 ### 5. Khởi chạy toàn hệ thống bằng Docker
 Chỉ với 1 câu lệnh, Docker sẽ tự động pull các image cần thiết (Qdrant, MinIO), cài đặt thư viện và khởi động toàn bộ Microservices:
