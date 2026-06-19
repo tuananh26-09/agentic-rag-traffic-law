@@ -31,5 +31,5 @@ Hệ thống được thiết kế theo chuẩn Microservices, đóng gói hoàn
 ### 2. Thiết lập môi trường
 Clone repository về máy:
 ```bash
-git clone [https://github.com/TenCuaBan/agentic-rag-traffic-law.git](https://github.com/TenCuaBan/agentic-rag-traffic-law.git)
+git clone [https://github.com/tuananh26-09/agentic-rag-traffic-law.git](https://github.com/tuananh26-09/agentic-rag-traffic-law.git)
 cd agentic-rag-traffic-law
