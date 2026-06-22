@@ -46,7 +46,7 @@ Hệ thống được thiết kế theo chuẩn Microservices, cô lập môi tr
 
 ```text
 📦 agentic-rag-traffic-law
-├── 📁 data                   # [Cần thêm tay] Chứa file tài liệu gốc (.md, .pdf)
+├── 📁 data                   # Chứa file tài liệu gốc (.md, .pdf)
 ├── 📁 src                    # Source code lõi của hệ thống
 │   ├── 📁 api                # FastAPI endpoints (Microservices)
 │   ├── 📁 chunking           # Xử lý chia nhỏ văn bản, bảo toàn cấu trúc luật
