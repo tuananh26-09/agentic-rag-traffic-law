@@ -4,7 +4,6 @@ from langchain_core.documents import Document
 
 class LawTextChunker:
     def __init__(self, chunk_size=1024, chunk_overlap=128):
-        # 1. BỘ CẮT THEO CẤU TRÚC MARKDOWN 
         headers_to_split_on = [
             ("#", "Tên Chương"), 
             ("##", "Tên Điều Luật"), 
@@ -14,7 +13,6 @@ class LawTextChunker:
             strip_headers=False 
         )
         
-        # 2. BỘ BĂM NHỎ THÔNG MINH BẰNG REGEX
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
