@@ -6,10 +6,12 @@ from src.graph.state import RAGState
 from src.vectordb.vector_store import get_retriever as get_vector_retriever
 from src.retrieval.retriever import BM25Retriever, HybridRetriever
 from src.llm.llm_client import get_llm
-from src.prompts.prompt_templates import BASELINE_PROMPT
+from src.prompts.prompt_templates import BASELINE_PROMPT, REWRITE_PROMPT
 from src.utils.helpers import parse_focused_answer 
 from langgraph.checkpoint.memory import MemorySaver
 from dotenv import load_dotenv
+from langchain_core.documents import Document as LangchainDocument
+from langchain_google_genai import ChatGoogleGenerativeAI 
 
 load_dotenv()
 
@@ -18,7 +20,6 @@ hybrid_retriever_instance = None
 
 def get_hybrid_retriever():
     global hybrid_retriever_instance
-    # Nếu đã khởi tạo rồi thì dùng luôn, không cần tải lại file
     if hybrid_retriever_instance is not None:
         return hybrid_retriever_instance
         
@@ -32,15 +33,20 @@ def get_hybrid_retriever():
         )
         
         # Kéo file chunks.pkl từ bucket 'rag-data'
-        response = minio_client.get_object("rag-data", "chunks.pkl")
+        response = minio_client.get_object("rag-data", "chunk.pkl")
         saved_chunks = pickle.loads(response.read())
         response.close()
         response.release_conn()
         print(" Đã tải xong dữ liệu BM25 từ MinIO!")
         
+        langchain_docs = [
+            LangchainDocument(page_content=item["text"], metadata=item["metadata"])
+            for item in saved_chunks
+        ]
+        
         # Khởi tạo Retriever
         vector_retriever = get_vector_retriever()
-        bm25_retriever = BM25Retriever.from_documents(documents=saved_chunks, k=10)
+        bm25_retriever = BM25Retriever.from_documents(documents=langchain_docs, k=10)
         hybrid_retriever_instance = HybridRetriever(
             vector_retriever=vector_retriever, 
             bm25_retriever=bm25_retriever, 
@@ -56,7 +62,7 @@ def retrieve_node(state: RAGState):
     
     retriever = get_hybrid_retriever()
     
-    #1: TÌM KIẾM THEO NGỮ CẢNH
+    #1: LẤY CÂU HỎI VÀ XỬ LÝ NGỮ CẢNH
     search_query = state["question"]
     history = state.get("chat_history", [])
     
@@ -64,15 +70,30 @@ def retrieve_node(state: RAGState):
     if len(history) >= 2:
         last_user_question = history[-2].replace("Người dùng: ", "")
         search_query = f"{last_user_question} - {search_query}"
-    
-    # Dùng retriever vừa lấy được để invoke
-    docs = retriever.invoke(search_query)
+        
+    # 2. MỞ RỘNG TRUY VẤN (QUERY EXPANSION)
+    try:
+        lite_llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash-lite", 
+            temperature=0,
+            max_tokens=50
+        )
+        
+        formatted_rewrite_prompt = REWRITE_PROMPT.format(question=search_query)
+        
+        final_search_query = lite_llm.invoke(formatted_rewrite_prompt).content.strip()
+        print(f"\n [Trinh sát AI] Đã dịch: '{search_query}' \n   -> '{final_search_query}'\n")
+    except Exception as e:
+        print(f"\n [Trinh sát AI] Gặp sự cố: {e}. Sẽ dùng câu hỏi gốc.\n")
+        final_search_query = search_query
+        
+    # 3. TIẾN HÀNH TÌM KIẾM BẰNG TỪ KHÓA ĐÃ DỊCH
+    docs = retriever.invoke(final_search_query)
     
     formatted_docs = []
     seen = set()
     for doc in docs:
         content = (doc.page_content or "").strip()
-        # Loại bỏ rác: Dài hơn 40 ký tự và không trùng lặp
         if content and len(content) > 40 and content not in seen:
             formatted_docs.append(content)
             seen.add(content)
