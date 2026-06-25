@@ -30,3 +30,19 @@ BASELINE_PROMPT = PromptTemplate(
     template=system_template, 
     input_variables=["context", "question"]
 )
+
+
+
+rewrite_template = """Bạn là chuyên gia tra cứu Luật Giao thông đường bộ Việt Nam.
+Hãy dịch câu hỏi dân dã sau thành cụm từ khóa pháp lý chính thức.
+- TUYỆT ĐỐI CHỈ TRẢ VỀ TỪ KHÓA, không giải thích, không viết thành câu hoàn chỉnh.
+- Ví dụ: 'xe máy vượt đèn đỏ' -> 'xe mô tô, xe gắn máy, không chấp hành hiệu lệnh của đèn tín hiệu giao thông'
+- Ví dụ: 'lấn làn' -> 'đi không đúng phần đường hoặc làn đường quy định'
+
+Câu hỏi gốc: {question}
+Từ khóa pháp lý:"""
+
+REWRITE_PROMPT = PromptTemplate(
+    template=rewrite_template,
+    input_variables=["question"]
+)
