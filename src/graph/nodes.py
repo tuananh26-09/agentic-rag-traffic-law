@@ -76,7 +76,8 @@ def retrieve_node(state: RAGState):
         lite_llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash-lite", 
             temperature=0,
-            max_tokens=50
+            max_tokens=50,
+            api_key=os.getenv("GOOGLE_API_KEY2")
         )
         
         formatted_rewrite_prompt = REWRITE_PROMPT.format(question=search_query)
