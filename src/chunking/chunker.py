@@ -19,13 +19,22 @@ class LawTextChunker:
             is_separator_regex=True,
             keep_separator=True,
             separators=[
+            
+                r"\n# ",             # Tiêu đề H1
+                r"\n## ",            # Tiêu đề H2
+                r"\n### ",           # Tiêu đề H3
+                
                 r"\n## Điều \d+",     # Ưu tiên 1: Cắt theo ## Điều (đã được tự động tiêm vào)
                 r"\n\d+\.",          # Ưu tiên 2: Cắt theo Khoản (1., 2., 3.)
                 r"\n[a-zđ]\)",       # Ưu tiên 3: Cắt theo Điểm (a), b), đ))
+                r"\n-\s",            # Gạch đầu dòng
+                r"\n\*\s",           # Dấu sao đầu dòng
                 r"\n\n",             # Ưu tiên 4: Đoạn văn
                 r"\n",               # Ưu tiên 5: Dòng
-                r"(?<=\.)\s",        # Ưu tiên 6: Câu
-                r"\s"                # Ưu tiên cuối: Khoảng trắng
+                r"(?<=[.?!])\s+",    # Ưu tiên 6: Câu
+                r"\s+",              # Ưu tiên cuối: Khoảng trắng
+                ""                   # Cắt theo từng ký tự (Character) - Khóa an toàn cuối cùng
+                
             ]
         )
 
