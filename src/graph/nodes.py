@@ -1,5 +1,6 @@
 import pickle
 import os
+import requests
 from minio import Minio
 from langgraph.graph import StateGraph, START, END
 from src.graph.state import RAGState
@@ -46,11 +47,11 @@ def get_hybrid_retriever():
         
         # Khởi tạo Retriever
         vector_retriever = get_vector_retriever()
-        bm25_retriever = BM25Retriever.from_documents(documents=langchain_docs, k=10)
+        bm25_retriever = BM25Retriever.from_documents(documents=langchain_docs, k=15)
         hybrid_retriever_instance = HybridRetriever(
             vector_retriever=vector_retriever, 
             bm25_retriever=bm25_retriever, 
-            k=10
+            k=15
         )
         return hybrid_retriever_instance
         
@@ -91,15 +92,45 @@ def retrieve_node(state: RAGState):
     # 3. TIẾN HÀNH TÌM KIẾM BẰNG TỪ KHÓA ĐÃ DỊCH
     docs = retriever.invoke(final_search_query)
     
-    formatted_docs = []
+    unique_docs = []
     seen = set()
     for doc in docs:
         content = (doc.page_content or "").strip()
         if content and len(content) > 40 and content not in seen:
-            formatted_docs.append(content)
+            unique_docs.append(content)
             seen.add(content)
             
-    return {"documents": formatted_docs}
+    top_k_final = 3
+    final_docs = []
+    
+    if unique_docs:
+        print(f" [Trạm Kiểm Duyệt] Gửi {len(unique_docs)} tài liệu cho Reranker chấm điểm...")
+        rerank_url = os.getenv("RERANKER_URL", "http://reranker_api:80/rerank")
+        payload = {
+            "query": final_search_query,
+            "texts": unique_docs
+        }
+        
+        try:
+            # Bắn API sang container Rerank
+            response = requests.post(rerank_url, json=payload, timeout=10)
+            response.raise_for_status()
+            rerank_results = response.json()
+            
+            # rerank_results trả về dạng: [{"index": 2, "score": 0.95}, ...]
+            for item in rerank_results[:top_k_final]:
+                idx = item["index"]
+                final_docs.append(unique_docs[idx])
+                
+            print(f" [Trạm Kiểm Duyệt] Đã chốt {len(final_docs)} tài liệu chuẩn xác nhất!")
+            
+        except Exception as e:
+            print(f" ⚠️ Reranker API lỗi hoặc chưa bật ({e}). Dùng kết quả gốc của Hybrid.")
+            final_docs = unique_docs[:top_k_final]
+    else:
+        final_docs = []
+
+    return {"documents": final_docs}
 
 def generate_node(state: RAGState):
     print("\n[Node] AI đang phân tích luật...")
