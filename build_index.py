@@ -24,7 +24,7 @@ def main():
     # Thực hiện băm văn bản
     chunks = law_chunker.split_documents(documents)
 
-    print("-> Đang đẩy file chunks.pkl lên MinIO...")
+    print("-> Đang đẩy file chunk.pkl lên MinIO...")
     # Khởi tạo kết nối tới MinIO
     minio_client = Minio(
         os.getenv("MINIO_URL"),
@@ -45,7 +45,7 @@ def main():
     # Đẩy thẳng lên bucket 'rag-data'
     minio_client.put_object(
         bucket_name="rag-data",
-        object_name="chunks.pkl",
+        object_name="chunk.pkl",
         data=data_stream,
         length=len(pickled_data)
     )
